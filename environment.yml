@@ -1,0 +1,12 @@
+name: env_rl_project
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - tensorflow==2.15.0
+      - numpy==1.26.4
+      - matplotlib==3.8.2
+
+prefix: C:\Users\hzezo\miniconda3\envs\env_rl_project

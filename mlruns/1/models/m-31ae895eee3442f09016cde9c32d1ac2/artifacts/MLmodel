@@ -1,0 +1,22 @@
+artifact_path: file:///C:/Users/hzezo/OneDrive/Desktop/gan_project/mlruns/1/models/m-31ae895eee3442f09016cde9c32d1ac2/artifacts
+flavors:
+  python_function:
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.tensorflow
+    python_version: 3.10.19
+  tensorflow:
+    code: null
+    data: data
+    keras_version: 2.15.0
+    model_type: keras
+    save_format: tf
+mlflow_version: 3.10.1
+model_id: m-31ae895eee3442f09016cde9c32d1ac2
+model_size_bytes: 6201203
+model_uuid: m-31ae895eee3442f09016cde9c32d1ac2
+prompts: null
+run_id: 7ab6fd8dd6504054812bcb944ef0e7f0
+utc_time_created: '2026-03-10 00:51:27.440147'
