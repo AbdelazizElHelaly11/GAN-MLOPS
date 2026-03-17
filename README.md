@@ -1,4 +1,2 @@
-GAN MLOps Project
-
-
+GAN MLOps Project final.
 
