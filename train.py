@@ -116,10 +116,11 @@ def train():
             registered_model_name="mnist_classifier"
         )
         
-        # Export run ID to file
-        print(f"Exporting run ID to model_info.txt...")
+        # Export run ID and accuracy to file
+        print(f"Exporting run ID and accuracy to model_info.txt...")
         with open("model_info.txt", "w") as f:
-            f.write(run_id)
+            f.write(f"{run_id}\n")
+            f.write(f"{test_accuracy}\n")
         
         print(f"\n✓ Training complete! Run ID: {run_id}")
         print(f"✓ Accuracy: {test_accuracy:.4f} - Threshold check: {'PASS' if test_accuracy >= 0.85 else 'FAIL'}")

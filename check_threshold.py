@@ -18,28 +18,17 @@ def check_threshold(threshold=0.85):
     Returns:
         bool: True if accuracy meets threshold, False otherwise
     """
-    # Read the run ID from model_info.txt
+    # Read the run ID and accuracy from model_info.txt
     try:
         with open("model_info.txt", "r") as f:
-            run_id = f.read().strip()
-        print(f"Reading metrics for Run ID: {run_id}")
-    except FileNotFoundError:
-        print("ERROR: model_info.txt not found!")
+            lines = f.readlines()
+            run_id = lines[0].strip()
+            accuracy = float(lines[1].strip())
+        print(f"Reading metrics from model_info.txt")
+        print(f"Run ID: {run_id}")
+    except (FileNotFoundError, IndexError, ValueError) as e:
+        print(f"ERROR: Could not read model_info.txt: {e}")
         sys.exit(1)
-    
-    # Initialize MLflow client
-    client = MlflowClient()
-    
-    try:
-        # Get the run data
-        run = client.get_run(run_id)
-        
-        # Extract accuracy metric
-        accuracy = run.data.metrics.get("accuracy")
-        
-        if accuracy is None:
-            print("ERROR: Accuracy metric not found in MLflow run!")
-            sys.exit(1)
         
         print(f"\n{'='*60}")
         print(f"Model Validation Check")
