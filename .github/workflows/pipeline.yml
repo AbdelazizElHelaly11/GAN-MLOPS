@@ -1,0 +1,140 @@
+name: ML Model Validation and Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - ci-test
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      epochs:
+        description: 'Number of training epochs (1-2 for failure, 10+ for success)'
+        required: false
+        default: '10'
+        type: string
+
+jobs:
+  validate:
+    name: Train and Validate Model
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Pull Data with DVC
+        run: |
+          # Initialize DVC (in case not initialized)
+          dvc init --force || true
+          
+          # DVC pull (will be no-op if no remote configured)
+          dvc pull || echo "DVC pull skipped (no remote configured)"
+          
+          echo "Data preparation complete"
+      
+      - name: Train Model
+        env:
+          EPOCHS: ${{ github.event.inputs.epochs || '10' }}
+          MLFLOW_TRACKING_URI: ./mlruns
+        run: |
+          echo "Training with $EPOCHS epochs..."
+          python train.py
+      
+      - name: Verify model_info.txt Created
+        run: |
+          if [ ! -f model_info.txt ]; then
+            echo "ERROR: model_info.txt not found!"
+            exit 1
+          fi
+          
+          RUN_ID=$(cat model_info.txt)
+          echo "Run ID: $RUN_ID"
+          echo "✓ model_info.txt created successfully"
+      
+      - name: Upload Model Info Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-info
+          path: model_info.txt
+          retention-days: 5
+      
+      - name: Upload MLflow Runs
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlruns
+          path: mlruns/
+          retention-days: 5
+
+  deploy:
+    name: Check Threshold and Deploy
+    runs-on: ubuntu-latest
+    needs: validate
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install mlflow
+      
+      - name: Download Model Info Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: model-info
+      
+      - name: Download MLflow Runs
+        uses: actions/download-artifact@v4
+        with:
+          name: mlruns
+          path: mlruns/
+      
+      - name: Check Accuracy Threshold
+        env:
+          MLFLOW_TRACKING_URI: ./mlruns
+          ACCURACY_THRESHOLD: '0.85'
+        run: |
+          echo "Checking if model meets deployment threshold..."
+          python check_threshold.py
+      
+      - name: Mock Docker Build
+        if: success()
+        run: |
+          RUN_ID=$(cat model_info.txt)
+          echo "=========================================="
+          echo "Building Docker image for Run ID: $RUN_ID"
+          echo "=========================================="
+          echo ""
+          echo "Command: docker build --build-arg RUN_ID=$RUN_ID -t mnist-model:$RUN_ID ."
+          echo ""
+          echo "✓ Mock build successful!"
+          echo "✓ Model ready for deployment!"
+      
+      - name: Deployment Summary
+        if: success()
+        run: |
+          RUN_ID=$(cat model_info.txt)
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Model validated and ready for deployment**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run ID**: \`$RUN_ID\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Accuracy**: Passed threshold (≥ 85%)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Docker Image**: \`mnist-model:$RUN_ID\`" >> $GITHUB_STEP_SUMMARY
