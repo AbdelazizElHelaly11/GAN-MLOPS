@@ -109,6 +109,18 @@ jobs:
           name: mlruns
           path: .
       
+      - name: Debug - List Downloaded Files
+        run: |
+          echo "Current directory structure:"
+          ls -la
+          echo "---"
+          if [ -d "mlruns" ]; then
+            echo "mlruns directory exists"
+            find mlruns -type f | head -20
+          else
+            echo "ERROR: mlruns directory not found!"
+          fi
+      
       - name: Check Accuracy Threshold
         env:
           MLFLOW_TRACKING_URI: ./mlruns
