@@ -18,7 +18,7 @@ This repository implements a two-job GitHub Actions MLOps pipeline:
 Run from PowerShell in the repo root:
 
 ```powershell
-$env:MLFLOW_TRACKING_URI = "./mlruns"
+$env:MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
 $env:EPOCHS = "10"
 python train.py
 

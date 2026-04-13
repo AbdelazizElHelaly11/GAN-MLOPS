@@ -42,10 +42,15 @@ jobs:
       - name: Train model
         env:
           EPOCHS: ${{ github.event.inputs.epochs || '10' }}
-          MLFLOW_TRACKING_URI: ./mlruns
+          MLFLOW_TRACKING_URI: sqlite:///mlflow.db
         run: |
           echo "Training with $EPOCHS epochs..."
           python train.py
+
+      - name: Verify MLflow outputs were created
+        run: |
+          test -f mlflow.db
+          test -d mlruns
 
       - name: Verify model_info.txt was created
         run: |
@@ -103,7 +108,7 @@ jobs:
 
       - name: Check accuracy threshold
         env:
-          MLFLOW_TRACKING_URI: ./mlruns
+          MLFLOW_TRACKING_URI: sqlite:///mlflow.db
           ACCURACY_THRESHOLD: "0.85"
         run: python check_threshold.py
 
