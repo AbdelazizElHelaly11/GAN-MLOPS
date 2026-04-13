@@ -3,7 +3,6 @@ Simple MNIST classifier that logs to MLflow
 Configurable epochs via EPOCHS environment variable for testing
 """
 import os
-import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models
 import mlflow
@@ -112,15 +111,13 @@ def train():
         print("Logging model to MLflow...")
         mlflow.tensorflow.log_model(
             model=model,
-            artifact_path="model",
-            registered_model_name="mnist_classifier"
+            artifact_path="model"
         )
         
-        # Export run ID and accuracy to file
-        print(f"Exporting run ID and accuracy to model_info.txt...")
-        with open("model_info.txt", "w") as f:
+        # Export run ID to file for downstream workflow jobs
+        print("Exporting run ID to model_info.txt...")
+        with open("model_info.txt", "w", encoding="utf-8") as f:
             f.write(f"{run_id}\n")
-            f.write(f"{test_accuracy}\n")
         
         print(f"\n✓ Training complete! Run ID: {run_id}")
         print(f"✓ Accuracy: {test_accuracy:.4f} - Threshold check: {'PASS' if test_accuracy >= 0.85 else 'FAIL'}")
