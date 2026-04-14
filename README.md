@@ -27,3 +27,6 @@ python check_threshold.py
 ```
 
 To force a failure case, run training with `EPOCHS=1` and then run `check_threshold.py`.
+
+# Assignment 6 Complete: Gatekeeper Workflow Implementation
+
